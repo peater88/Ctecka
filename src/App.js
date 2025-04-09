@@ -1,6 +1,5 @@
-import React, { useState, useRef } from "react";
-import * as pdfjsLib from "pdfjs-dist";
-import "pdfjs-dist/build/pdf.worker.entry";
+import React, { useState, useRef } from 'react';
+import * as pdfjsLib from 'pdfjs-dist';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
@@ -26,39 +25,40 @@ function App() {
         }
 
         setText(fullText);
-        speakText(fullText);
       };
       reader.readAsArrayBuffer(file);
     }
   };
 
-  const speakText = (content) => {
-    if (!window.speechSynthesis) return alert("TTS není podporováno.");
-    const utterance = new SpeechSynthesisUtterance(content);
-    utterance.lang = "cs-CZ";
-    utterance.rate = 1;
-    speechRef.current = utterance;
+  const handleReadAloud = () => {
+    if (!text) return;
+    const speech = new SpeechSynthesisUtterance(text);
+    speechRef.current = speech;
+    speech.lang = "cs-CZ";
+    speech.onend = () => setIsSpeaking(false);
+    window.speechSynthesis.speak(speech);
     setIsSpeaking(true);
-
-    utterance.onend = () => setIsSpeaking(false);
-    window.speechSynthesis.speak(utterance);
   };
 
-  const stopSpeaking = () => {
+  const handleStop = () => {
     window.speechSynthesis.cancel();
     setIsSpeaking(false);
   };
 
   return (
-    <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-      <h2>📖 Nahraj PDF soubor ke čtení</h2>
-      <input type="file" accept=".pdf" onChange={handleFileChange} />
-      {isSpeaking && (
-        <button onClick={stopSpeaking} style={{ marginLeft: "1rem" }}>
-          🛑 Zastavit čtení
-        </button>
-      )}
-      <pre style={{ marginTop: "2rem", whiteSpace: "pre-wrap" }}>{text}</pre>
+    <div style={{ padding: 30, fontFamily: 'Arial' }}>
+      <h2>📖 Nahrát PDF a nechat přečíst</h2>
+      <input type="file" accept="application/pdf" onChange={handleFileChange} />
+      <div style={{ marginTop: 20 }}>
+        <button onClick={handleReadAloud} disabled={isSpeaking || !text}>▶️ Přečíst</button>
+        <button onClick={handleStop} disabled={!isSpeaking}>⏹️ Zastavit</button>
+      </div>
+      <textarea
+        rows={15}
+        value={text}
+        readOnly
+        style={{ marginTop: 20, width: '100%', fontSize: 14 }}
+      />
     </div>
   );
 }
