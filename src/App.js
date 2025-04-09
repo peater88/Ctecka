@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
-import * as pdfjsLib from 'pdfjs-dist';
+import React, { useState, useRef } from "react";
+import * as pdfjsLib from "pdfjs-dist";
+import "pdfjs-dist/build/pdf.worker.entry";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
@@ -25,40 +26,39 @@ function App() {
         }
 
         setText(fullText);
+        speakText(fullText);
       };
       reader.readAsArrayBuffer(file);
     }
   };
 
-  const speak = () => {
-    if (!text) return;
-    const utterance = new SpeechSynthesisUtterance(text);
+  const speakText = (content) => {
+    if (!window.speechSynthesis) return alert("TTS není podporováno.");
+    const utterance = new SpeechSynthesisUtterance(content);
     utterance.lang = "cs-CZ";
     utterance.rate = 1;
-    utterance.onend = () => setIsSpeaking(false);
-    speechSynthesis.speak(utterance);
     speechRef.current = utterance;
     setIsSpeaking(true);
+
+    utterance.onend = () => setIsSpeaking(false);
+    window.speechSynthesis.speak(utterance);
   };
 
-  const stop = () => {
-    speechSynthesis.cancel();
+  const stopSpeaking = () => {
+    window.speechSynthesis.cancel();
     setIsSpeaking(false);
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '700px', margin: '0 auto' }}>
-      <h1>Čtečka PDF s hlasem</h1>
-      <input type="file" accept="application/pdf" onChange={handleFileChange} />
-      {text && (
-        <div style={{ marginTop: '20px', height: '200px', overflowY: 'scroll', border: '1px solid #ccc', padding: '10px', whiteSpace: 'pre-wrap' }}>
-          {text}
-        </div>
+    <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
+      <h2>📖 Nahraj PDF soubor ke čtení</h2>
+      <input type="file" accept=".pdf" onChange={handleFileChange} />
+      {isSpeaking && (
+        <button onClick={stopSpeaking} style={{ marginLeft: "1rem" }}>
+          🛑 Zastavit čtení
+        </button>
       )}
-      <div style={{ marginTop: '20px' }}>
-        <button onClick={speak} disabled={isSpeaking || !text}>Spustit čtení</button>
-        <button onClick={stop} disabled={!isSpeaking} style={{ marginLeft: '10px' }}>Zastavit</button>
-      </div>
+      <pre style={{ marginTop: "2rem", whiteSpace: "pre-wrap" }}>{text}</pre>
     </div>
   );
 }
