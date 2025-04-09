@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = //cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js;
 
 function App() {
   const [text, setText] = useState("");
@@ -30,35 +30,35 @@ function App() {
     }
   };
 
-  const speak = () => {
+  const handleReadAloud = () => {
     if (!text) return;
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "cs-CZ";
-    utterance.rate = 1;
-    utterance.onend = () => setIsSpeaking(false);
-    speechSynthesis.speak(utterance);
-    speechRef.current = utterance;
+    const speech = new SpeechSynthesisUtterance(text);
+    speechRef.current = speech;
+    speech.lang = "cs-CZ";
+    speech.onend = () => setIsSpeaking(false);
+    window.speechSynthesis.speak(speech);
     setIsSpeaking(true);
   };
 
-  const stop = () => {
-    speechSynthesis.cancel();
+  const handleStop = () => {
+    window.speechSynthesis.cancel();
     setIsSpeaking(false);
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '700px', margin: '0 auto' }}>
-      <h1>Čtečka PDF s hlasem</h1>
+    <div style={{ padding: 30, fontFamily: 'Arial' }}>
+      <h2>📖 Nahrát PDF a nechat přečíst</h2>
       <input type="file" accept="application/pdf" onChange={handleFileChange} />
-      {text && (
-        <div style={{ marginTop: '20px', height: '200px', overflowY: 'scroll', border: '1px solid #ccc', padding: '10px', whiteSpace: 'pre-wrap' }}>
-          {text}
-        </div>
-      )}
-      <div style={{ marginTop: '20px' }}>
-        <button onClick={speak} disabled={isSpeaking || !text}>Spustit čtení</button>
-        <button onClick={stop} disabled={!isSpeaking} style={{ marginLeft: '10px' }}>Zastavit</button>
+      <div style={{ marginTop: 20 }}>
+        <button onClick={handleReadAloud} disabled={isSpeaking || !text}>▶️ Přečíst</button>
+        <button onClick={handleStop} disabled={!isSpeaking}>⏹️ Zastavit</button>
       </div>
+      <textarea
+        rows={15}
+        value={text}
+        readOnly
+        style={{ marginTop: 20, width: '100%', fontSize: 14 }}
+      />
     </div>
   );
 }
